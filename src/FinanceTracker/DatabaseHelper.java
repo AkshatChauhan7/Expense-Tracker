@@ -4,52 +4,49 @@ import java.sql.*;
 
 public class DatabaseHelper {
     private static final String URL = "jdbc:mysql://localhost:3306/expense_tracker";
-    private static final String USER = "your_mysql_username";
-    private static final String PASSWORD = "your_mysql_password";
+    private static final String USER = "root";
+    private static final String PASSWORD = "070214";
 
     static {
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
+            Class.forName("com.mysql.cj.jdbc.Driver"); // Ensure JDBC driver is loaded
         } catch (ClassNotFoundException e) {
-            System.err.println("MySQL JDBC Driver not found.");
             e.printStackTrace();
         }
     }
 
-    public static boolean register(String username, String password) {
-        String sql = "INSERT INTO users(username, password) VALUES (?, ?)";
-
+    public static boolean registerUser(String username, String password) {
+        String query = "INSERT INTO users (username, password) VALUES (?, ?)";
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setString(1, username);
             stmt.setString(2, password);
+
             stmt.executeUpdate();
             return true;
 
-        } catch (SQLIntegrityConstraintViolationException e) {
-            System.out.println("Username already exists.");
         } catch (SQLException e) {
-            e.printStackTrace();
+            e.printStackTrace(); // Username might already exist
+            return false;
         }
-        return false;
     }
 
-    public static boolean login(String username, String password) {
-        String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
-
+    public static boolean validateLogin(String username, String password) {
+        String query = "SELECT * FROM users WHERE username = ? AND password = ?";
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setString(1, username);
             stmt.setString(2, password);
 
             ResultSet rs = stmt.executeQuery();
-            return rs.next(); // login success if result found
+            return rs.next();
 
         } catch (SQLException e) {
             e.printStackTrace();
+            return false;
         }
-        return false;
     }
 }
+
